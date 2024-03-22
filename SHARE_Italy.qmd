@@ -4,3 +4,25 @@ format: html
 editor: visual
 author: Sula Disem
 ---
+
+```{r}
+#| echo: false
+#| message: false
+here::i_am("Final_SHARE_Italy.Rproj")
+library(here)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(vroom)
+library(stringr)
+library(knitr)
+library(patchwork)
+library(broom)
+```
+
+```{r}
+#| echo: false
+#| message: false
+load("easySHARE_rel8_0_0.rda")
+```
+
