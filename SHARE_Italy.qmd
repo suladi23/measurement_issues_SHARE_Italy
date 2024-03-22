@@ -26,3 +26,30 @@ library(broom)
 load("easySHARE_rel8_0_0.rda")
 ```
 
+```{r}
+#| echo: false
+#| message: false
+wave7 <- easySHARE_rel8_0_0 |>
+  filter(wave == "7")
+```
+
+```{r}
+#| echo: false
+#| message: false
+Italy <- wave7 |>
+  filter(country == "16")
+```
+
+```{r}
+#| echo: false
+#| message: false
+France <- wave7 |>
+  filter(country == "17")
+```
+
+```{r}
+#| echo: false
+#| message: false
+Netherlands <- wave7 |>
+  filter(country == "14")
+```
