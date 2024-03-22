@@ -1,6 +1,6 @@
 ---
 title: "SHARE_Italy"
-format: html
+format: pdf
 editor: visual
 author: Sula Disem
 ---
@@ -19,6 +19,17 @@ library(knitr)
 library(patchwork)
 library(broom)
 ```
+
+### Link to the github repository of this project {.appendix}
+
+[Github repository](https://github.com/suladi23/measurement_issues_SHARE_Italy)
+
+### Source of the data {.appendix}
+This paper uses data from the generated easySHARE data set (DOI: [10.6103/SHARE.easy.800](https://share-eric.eu/data/data-set-details/easyshare)), see Gruber et al. (2014) for methodological details. The easySHARE release 8.0.0 is based on SHARE Waves 1, 2, 3 (SHARELIFE), 4, 5, 6, 7 and 8 (DOIs: [10.6103/SHARE.w1.800](http://dx.doi.org/10.6103/SHARE.w1.800), [10.6103/SHARE.w2.800](http://dx.doi.org/10.6103/SHARE.w2.800), [10.6103/SHARE.w3.800](http://dx.doi.org/10.6103/SHARE.w3.800), [10.6103/SHARE.w4.800](http://dx.doi.org/10.6103/SHARE.w4.800),[10.6103/SHARE.w5.800](http://dx.doi.org/10.6103/SHARE.w5.800), [10.6103/SHARE.w6.800](http://dx.doi.org/10.6103/SHARE.w6.800), [10.6103/SHARE.w7.800](http://dx.doi.org/10.6103/SHARE.w7.800), [10.6103/SHARE.w8.800](http://dx.doi.org/10.6103/SHARE.w8.800))
+
+### References {.appendix}
+Börsch-Supan, A. & S. Gruber (2020): easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset. doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800)
+
 
 ```{r}
 #| echo: false
