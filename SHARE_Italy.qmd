@@ -164,4 +164,43 @@ combined <- data.frame(
 kable(combined, format = "markdown")
 ```
 
+## Measures of inequality and poverty based on household income
+
+Let's now look into the average household income of Italy for wave 7 and compare it with two other countries: France and Germany.
+
+```{r}
+#| echo: false
+#| message: false
+country_names <- c("Italy", "France", "Germany")
+
+# Calculate average household income for Italy
+Italy_avg_income <- Italy %>%
+  filter(thinc_m != -10) %>%
+  summarise(Average_Income = mean(thinc_m))
+
+# Calculate average household income for two other countries (France and Netherlands)
+France_avg_income <- France %>%
+  filter(thinc_m != -10) %>%
+  summarise(Average_Income = mean(thinc_m))
+
+Germany_avg_income <- Germany %>%
+  filter(thinc_m != -10) %>%
+  summarise(Average_Income = mean(thinc_m))
+
+# Combine the results into a single data frame
+avg_income_comparison <- rbind(Italy_avg_income, France_avg_income, Germany_avg_income)
+
+avg_income_comparison <- cbind(Country = country_names, avg_income_comparison)
+
+# Graph the average household income for the three countries
+ggplot(avg_income_comparison, aes(x = Country, y = Average_Income, fill = Country)) +
+  geom_bar(stat = "identity", width = 0.5) +
+  labs(x = "Country", y = "Average Household Income", title = "Average Household Income Comparison") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+```
+The average household income for Wave 7 in Italy, France, and Germany are graphically compared above.
+
+Based on the comparison, **France** has the highest average income (`r France_avg_income$Average_Income`), followed not so far by **Germany** (`r Germany_avg_income$Average_Income`) and way lower by **Italy** (`r Italy_avg_income$Average_Income`)
+
 
