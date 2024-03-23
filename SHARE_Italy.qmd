@@ -1,6 +1,12 @@
 ---
 title: "SHARE_Italy"
-format: pdf
+format:
+  pdf:
+    toc: true
+    toc-depth: 2
+    toc-title: Contents
+    number-sections: true
+    colorlinks: true
 editor: visual
 author: Sula Disem
 ---
@@ -61,6 +67,101 @@ France <- wave7 |>
 ```{r}
 #| echo: false
 #| message: false
-Netherlands <- wave7 |>
-  filter(country == "14")
+Germany <- wave7 |>
+  filter(country == "12")
 ```
+
+
+## Description of the Dataset for Italy
+
+The SHARE survey, or Survey of Health, Ageing and Retirement in Europe, is a multidisciplinary and cross-national research initiative aimed at understanding the dynamics of health, aging, and retirement among older adults in Europe and beyond.
+It aims to provide insights into the health, social, economic, and environmental factors influencing individuals' well-being and quality of life as they age.
+To do so it collects data from the same individual over multiple waves at regular intervals, to track changes in various aspect of life over time. The data is collected from a wide range of European countries, to enable comparison with trends and patterns across different cultures and economic contexts.
+
+SHARE employs a rigorous **sampling design** to ensure representativeness of the older population in each participating country. The survey includes individuals from diverse socio-economic backgrounds and geographic regions.
+
+```{r warning=FALSE}
+#| echo: false
+#| message: false
+nrows_Italy=nrow(Italy)
+ncols_Italy=ncol(Italy)
+```
+
+After some manipulation of the data, filtering it to use only "Wave 7" and to consider only the country of choice "Italy", the Dataset we will be using has **`r nrows_Italy` rows** and **`r ncols_Italy` columns (variables)**
+
+
+```{r}
+#| echo: false
+#| message: false
+#Mainupulating the data to be able to work better afterwards
+
+Italy$ep005_[Italy$ep005_ == 1] <- "Retired"
+Italy$ep005_[Italy$ep005_ == 2] <- "Employed or Self-employed"
+Italy$ep005_[Italy$ep005_ == 3] <- "Unemployed"
+Italy$ep005_[Italy$ep005_ == 4] <- "Permanently Sick or Disabled"
+Italy$ep005_[Italy$ep005_ == 5] <- "Homemaker"
+Italy$ep005_[Italy$ep005_ == 97] <- "Other"
+
+Italy$female[Italy$female == 0] <- "Male"
+Italy$female[Italy$female == 1] <- "Female"
+
+Italy <- Italy %>%
+  rename(
+    Gender = female,
+    `Employment status` = ep005_
+  )
+```
+
+
+The following table provides some descriptive statistics of Income, Age and Years of education.
+
+```{r}
+#| echo: false
+#| message: false
+# Calculate descriptive statistics for household income
+Italy_income_filtered <- Italy %>% 
+  filter(thinc_m != -10)
+summary_income <- summary(Italy_income_filtered$thinc_m)
+
+# Calculate descriptive statistics for gender
+gender_stats <- table(Italy$Gender)
+
+# Calculate descriptive statistics for age
+summary_age <- summary(Italy$age)
+
+# Calculate descriptive statistics for years of education
+Italy_education_filtered <- Italy |>
+  filter(eduyears_mod >= 0)
+summary_education <- summary(Italy_education_filtered$eduyears_mod)
+
+# Calculate descriptive statistics for employment status
+Italy_employment_filtered <- Italy |>
+  filter(`Employment status` != "-12" & `Employment status` != "-15")
+employment_status <- table(Italy_employment_filtered$`Employment status`)
+```
+
+```{r}
+#| echo: false
+#| message: false
+summary_combined <- data.frame(
+  Variable = c("Income", "Age", "Years of education"),
+  Min = c(summary_income["Min."], summary_age["Min."], summary_education["Min."]),
+  `1st Qu.` = c(summary_income["1st Qu."], summary_age["1st Qu."], summary_education["1st Qu."]),
+  Median = c(summary_income["Median"], summary_age["Median"], summary_education["Median"]),
+  Mean = c(summary_income["Mean"], summary_age["Mean"], summary_education["Mean"]),
+  `3rd Qu.` = c(summary_income["3rd Qu."], summary_age["3rd Qu."], summary_education["3rd Qu."]),
+  Max = c(summary_income["Max."], summary_age["Max."], summary_education["Max."])
+)
+kable(summary_combined, format = "markdown")
+```
+
+Out of `r nrows_Italy` observations, we have here a table showing how the individuals are distributed among different types of employment status and gender:
+```{r}
+#| echo: false
+#| message: false
+combined <- data.frame(
+  Count = c(employment_status, gender_stats))
+kable(combined, format = "markdown")
+```
+
+
