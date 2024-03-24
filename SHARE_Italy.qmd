@@ -216,6 +216,7 @@ These issues could introduce bias and inaccuracies in household income estimates
 ## Measuring income inequality in Italy
 
 To measure inequality let's start by using the Gini coefficient, an index to measure how much the distribution of income between individuals deviates from a perfectly equal distribution (Worldbank, Metadata Glossary).
+It is an index, so it provides a result between 0 and 1, a higher Gini coefficient indicates higher income inequality, while a coefficient loser to 0 indicates lower income inequality.
 
 ```{r}
 #| echo: false
@@ -225,4 +226,6 @@ italy_gini <- ineq(Italy_income_filtered$thinc_m, type = "Gini")
 print(paste("Gini coefficient for Italy:", italy_gini))
 ```
 
+We can see that for our contry of references we find a gini coefficient equal to 0.334, which indicates some ineqaulity but not that much.
 
+We now need to consider other coefficients:
