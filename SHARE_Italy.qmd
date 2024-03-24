@@ -302,6 +302,8 @@ $$
 This is what we get:
 
 ```{r}
+#| echo: false
+#| message: false
 num_poor <- sum(Italy_income_filtered$thinc_m < relative_poverty_line)
 
 total_population <- nrow(Italy_income_filtered)
@@ -314,4 +316,21 @@ This is a quite simple and easy to understand measure, but its limitations are o
 
 ### Poverty Gap Index
 
-Let's now have a look into where the poor stand in terms of distance from the poverty line, by using the poverty gap index. This index measures the depth of poverty by considering the distance separating the income of the poor from the poverty line
+Let's now have a look into where the poor stand in terms of distance from the poverty line, by using the poverty gap index. This index measures the depth of poverty by considering the distance separating the income of the poor from the poverty line.
+
+It is calculated as:
+$$
+PGI = {1/N}∑(poverty line - income of poor)/\\poverty line
+$$
+
+```{r}
+#| echo: false
+#| message: false
+income_under_poverty_line <- Italy_income_filtered$thinc_m[Italy_income_filtered$thinc_m < relative_poverty_line]
+poverty_gap_index <- 1/(length(Italy_income_filtered$thinc_m))* (sum(relative_poverty_line - income_under_poverty_line) / relative_poverty_line)
+
+print(paste("Poverty Gap Index:", round(poverty_gap_index, 1)))
+```
+
+It shows that on average, incomes of individuals below the poverty line are 10% below that threshold. Of course with this result only we can't say anything about the inequality inside the population under the poverty line, It might also be a problem the fact that we have many zeros in the income stated by some individuals, which would drag down some calculation and might bias our measures, because those zeros are probably just non replies.
+
