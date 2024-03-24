@@ -334,3 +334,37 @@ print(paste("Poverty Gap Index:", round(poverty_gap_index, 1)))
 
 It shows that on average, incomes of individuals below the poverty line are 10% below that threshold. Of course with this result only we can't say anything about the inequality inside the population under the poverty line, It might also be a problem the fact that we have many zeros in the income stated by some individuals, which would drag down some calculation and might bias our measures, because those zeros are probably just non replies.
 
+### Poverty in subjective terms
+We have measured poverty in relative terms until now, by selecting a threshold to state if a household has to be considered in poverty or no.
+Now we are going to look into poverty in more **subjective terms**, by looking into the households ability to make ends meet.
+Individuals in the survey have been asked: "Thinking of your household's total monthly income, would you
+say that your household is able to make ends meet...". Each of them could answer: 1 (great difficulty), 2 (some difficulty), 3 (fairly easily), 4 (easily).
+We are going to consider individuals answering 1 and 2 as in experiencing some level of financial issues, which could be indicative of poverty, and we are going to compute a subjective poverty rate.
+
+```{r}
+#| echo: false
+#| message: false
+poor_households1 <- Italy %>%
+  filter(co007_ %in% c(1, 2))
+
+poverty_rate_subjective1 <- nrow(poor_households1) / nrow(Italy)
+
+print(paste("Subjective Poverty Rate:", round(poverty_rate_subjective1 * 100, 2), "%"))
+```
+
+We find that 52.58% of individuals in the survey state that their household is able to make ends meet "with great difficulty" or "some difficulty".
+Since individuals might overestimate their issue when saying "some difficulty", let's consider in poverty only individuals that make ends meet "with great difficulty":
+
+```{r}
+#| echo: false
+#| message: false
+poor_households <- Italy %>%
+  filter(co007_ == 1)
+
+poverty_rate_subjective <- nrow(poor_households) / nrow(Italy)
+
+print(paste("Subjective Poverty Rate:", round(poverty_rate_subjective * 100, 2), "%"))
+```
+
+This result is much more consistent with the previous relative poverty measures that we have found so far.
+
