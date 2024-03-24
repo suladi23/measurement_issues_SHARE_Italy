@@ -3,7 +3,7 @@ title: "SHARE_Italy"
 format:
   pdf:
     toc: true
-    toc-depth: 2
+    toc-depth: 3
     toc-title: Contents
     number-sections: true
     colorlinks: true
@@ -29,15 +29,16 @@ library(Gini)
 library(ineq)
 ```
 
-### Link to the github repository of this project {.appendix}
+#### Link to the github repository of this project {.appendix}
 
 [Github repository](https://github.com/suladi23/measurement_issues_SHARE_Italy)
 
-### Source of the data {.appendix}
+#### Source of the data {.appendix}
 This paper uses data from the generated easySHARE data set (DOI: [10.6103/SHARE.easy.800](https://share-eric.eu/data/data-set-details/easyshare)), see Gruber et al. (2014) for methodological details. The easySHARE release 8.0.0 is based on SHARE Waves 1, 2, 3 (SHARELIFE), 4, 5, 6, 7 and 8 (DOIs: [10.6103/SHARE.w1.800](http://dx.doi.org/10.6103/SHARE.w1.800), [10.6103/SHARE.w2.800](http://dx.doi.org/10.6103/SHARE.w2.800), [10.6103/SHARE.w3.800](http://dx.doi.org/10.6103/SHARE.w3.800), [10.6103/SHARE.w4.800](http://dx.doi.org/10.6103/SHARE.w4.800),[10.6103/SHARE.w5.800](http://dx.doi.org/10.6103/SHARE.w5.800), [10.6103/SHARE.w6.800](http://dx.doi.org/10.6103/SHARE.w6.800), [10.6103/SHARE.w7.800](http://dx.doi.org/10.6103/SHARE.w7.800), [10.6103/SHARE.w8.800](http://dx.doi.org/10.6103/SHARE.w8.800))
 
-### References {.appendix}
+#### References {.appendix}
 Börsch-Supan, A. & S. Gruber (2020): easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset. doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800)
+Istat 2018, Condizione di vita, reddito e carico fiscale delle famiglie
 
 
 ```{r}
@@ -215,7 +216,24 @@ These issues could introduce bias and inaccuracies in household income estimates
 
 ## Measuring income inequality in Italy
 
-To measure inequality let's start by using the Gini coefficient, an index to measure how much the distribution of income between individuals deviates from a perfectly equal distribution (Worldbank, Metadata Glossary).
+Let's first have a look into the distribution of income in Italy with the help of a graph to have a general view of it, after that we will get into the measuring of inequality in net income of households in Italy, using Gini, Theil and Palma ratio.
+
+```{r}
+#| echo: false
+#| message: false
+# Plotting a density plot of net income
+ggplot(data = Italy_income_filtered, aes(x = thinc_m)) +
+  geom_histogram(binwidth = 1000, fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Net Income per households in Italy",
+       x = "Net Income (thousands)",
+       y = "Frequency") +
+  scale_x_continuous(labels = scales::comma_format(scale = 1e-3)) +
+  theme_minimal()
+```
+
+
+### Gini Coefficient
+To measure inequality let's start by using the **Gini** coefficient, an index to measure how much the distribution of income between individuals deviates from a perfectly equal distribution (Worldbank, Metadata Glossary).
 It is an index, so it provides a result between 0 and 1, a higher Gini coefficient indicates higher income inequality, while a coefficient loser to 0 indicates lower income inequality.
 
 ```{r}
@@ -226,6 +244,56 @@ italy_gini <- ineq(Italy_income_filtered$thinc_m, type = "Gini")
 print(paste("Gini coefficient for Italy:", italy_gini))
 ```
 
-We can see that for our contry of references we find a gini coefficient equal to 0.334, which indicates some ineqaulity but not that much.
+We can see that for our country of references we find a gini coefficient equal to `r italy_gini` (0.334), which indicates some ineqaulity but not that much.
+The Gini coefficient is the most widely used measure of income inequality, because it is very easy to calculate and interpret. The problem is that it does not provide any insights into the distribution of income at different parts of the income distribution
 
-We now need to consider other coefficients:
+### Theil index
+We are now going to consider another coefficient to measure inequality: **The Theil Index**
+The Theil index measures the distance between what we observe in the data and a situation where everyone has the same income.
+The closer we get to 0 the more equality, the closer to 1, the higher the level of inequality.
+
+```{r}
+#| echo: false
+#| message: false
+# Calculate the Theil index
+italy_theil <- Theil(Italy_income_filtered$thinc_m)
+print(paste("The Theil index for Italy:", italy_theil))
+```
+
+We see a Theil index that again suggests not that high inequality of incomes in Italy. The problem with this index is that it is sensitive to the size of the population and the weights you put in each group, even though in this case we didn't assign any way.
+
+### Palma ratio
+A last measure of income inequality is a share ratio, called "Palma ratio", it looks at where most of the inequality comes from, does it come from the fact that the top 10% have a way higher income, and/or from the fact that the bottom 40% have a very low income?
+
+```{r}
+#| echo: false
+#| message: false
+# Calculate the Palma ratio
+percentile_90 <- quantile(Italy_income_filtered$thinc_m, 0.9)
+percentile_60 <- quantile(Italy_income_filtered$thinc_m, 0.6)
+top_10_share <- sum(Italy_income_filtered$thinc_m[Italy_income_filtered$thinc_m >= percentile_90]) / sum(Italy_income_filtered$thinc_m)
+bottom_40_share <- sum(Italy_income_filtered$thinc_m[Italy_income_filtered$thinc_m <= percentile_60]) / sum(Italy_income_filtered$thinc_m)
+italy_palma <- top_10_share / bottom_40_share
+
+print(paste("The Palma ratio 90/40 for Italy:", italy_palma))
+```
+
+This result for Italy, a Palma ratio of approximately 0.65, means that the income share of the top 10% of the population is about 0.65 times larger than the income share of It suggests that a signifiant portion of the total income is concentrated among the wealthiest individuals, something that is not surprising in developed countries like Italy.
+
+The Palma ratio is very useful when looking into extreme income shares, to really understand where most of the inequality comes from. But it has to be used carefully, as it may oversimplify the income distribution by focusing on only two segments of the population (in our case, top 10% and bottom 40%).
+
+## Measuring poverty in Italy
+Let's now focus on the bottom of the distribution by looking into different measures of poverty. Even though is not that easy to measure it, especially when having to decide what is the threshold in income to be considered in poverty for example. We can define it in monetary terms by looking at it in **absolute** terms (lack of minimum resources like food), **relative** (to living standards) and **subjective terms** ("do you think you have enough to meet ends?")
+We first need to find out poverty line, which in Italy changes accordingly to the fact that you live in the north, centre or south and of course it changes accordingly to the number of components in the family and their age. Since we do not know from where the individual come from, how many components in a household, the best thing to do is find a **relative poverty line** calculated as a percentage of the median income. It could be interesting in this case to create a relative poverty line at 60% of the median net income of the household of the sample in the data we are using.
+
+```{r}
+#| echo: false
+#| message: false
+median_income_Italy <- median(Italy_income_filtered$thinc_m)
+
+relative_poverty_line <- median_income_Italy * 0.6
+
+print(paste("Relative Poverty Line:", round(relative_poverty_line, 2)))
+```
+
+
