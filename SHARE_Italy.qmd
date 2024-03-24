@@ -34,12 +34,12 @@ library(ineq)
 [Github repository](https://github.com/suladi23/measurement_issues_SHARE_Italy)
 
 #### Source of the data {.appendix}
+
 This paper uses data from the generated easySHARE data set (DOI: [10.6103/SHARE.easy.800](https://share-eric.eu/data/data-set-details/easyshare)), see Gruber et al. (2014) for methodological details. The easySHARE release 8.0.0 is based on SHARE Waves 1, 2, 3 (SHARELIFE), 4, 5, 6, 7 and 8 (DOIs: [10.6103/SHARE.w1.800](http://dx.doi.org/10.6103/SHARE.w1.800), [10.6103/SHARE.w2.800](http://dx.doi.org/10.6103/SHARE.w2.800), [10.6103/SHARE.w3.800](http://dx.doi.org/10.6103/SHARE.w3.800), [10.6103/SHARE.w4.800](http://dx.doi.org/10.6103/SHARE.w4.800),[10.6103/SHARE.w5.800](http://dx.doi.org/10.6103/SHARE.w5.800), [10.6103/SHARE.w6.800](http://dx.doi.org/10.6103/SHARE.w6.800), [10.6103/SHARE.w7.800](http://dx.doi.org/10.6103/SHARE.w7.800), [10.6103/SHARE.w8.800](http://dx.doi.org/10.6103/SHARE.w8.800))
 
 #### References {.appendix}
-Börsch-Supan, A. & S. Gruber (2020): easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset. doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800)
-Istat 2018, Condizione di vita, reddito e carico fiscale delle famiglie
 
+Börsch-Supan, A. & S. Gruber (2020): easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset. doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800) Istat 2018, Condizione di vita, reddito e carico fiscale delle famiglie
 
 ```{r}
 #| echo: false
@@ -75,12 +75,9 @@ Germany <- wave7 |>
   filter(country == "12")
 ```
 
-
 ## Description of the Dataset for Italy
 
-The SHARE survey, or Survey of Health, Ageing and Retirement in Europe, is a multidisciplinary and cross-national research initiative aimed at understanding the dynamics of health, aging, and retirement among older adults in Europe and beyond.
-It aims to provide insights into the health, social, economic, and environmental factors influencing individuals' well-being and quality of life as they age.
-To do so it collects data from the same individual over multiple waves at regular intervals, to track changes in various aspect of life over time. The data is collected from a wide range of European countries, to enable comparison with trends and patterns across different cultures and economic contexts.
+The SHARE survey, or Survey of Health, Ageing and Retirement in Europe, is a multidisciplinary and cross-national research initiative aimed at understanding the dynamics of health, aging, and retirement among older adults in Europe and beyond. It aims to provide insights into the health, social, economic, and environmental factors influencing individuals' well-being and quality of life as they age. To do so it collects data from the same individual over multiple waves at regular intervals, to track changes in various aspect of life over time. The data is collected from a wide range of European countries, to enable comparison with trends and patterns across different cultures and economic contexts.
 
 SHARE employs a rigorous **sampling design** to ensure representativeness of the older population in each participating country. The survey includes individuals from diverse socio-economic backgrounds and geographic regions.
 
@@ -92,7 +89,6 @@ ncols_Italy=ncol(Italy)
 ```
 
 After some manipulation of the data, filtering it to use only "Wave 7" and to consider only the country of choice "Italy", the Dataset we will be using has **`r nrows_Italy` rows** and **`r ncols_Italy` columns (variables)**
-
 
 ```{r}
 #| echo: false
@@ -115,7 +111,6 @@ Italy <- Italy %>%
     `Employment status` = ep005_
   )
 ```
-
 
 The following table provides some descriptive statistics of Income, Age and Years of education.
 
@@ -160,6 +155,7 @@ kable(summary_combined, format = "markdown")
 ```
 
 Out of `r nrows_Italy` observations, we have here a table showing how the individuals are distributed among different types of employment status and gender:
+
 ```{r}
 #| echo: false
 #| message: false
@@ -167,7 +163,6 @@ combined <- data.frame(
   Count = c(employment_status, gender_stats))
 kable(combined, format = "markdown")
 ```
-
 
 ## Measures of inequality and poverty based on household income
 
@@ -204,6 +199,7 @@ ggplot(avg_income_comparison, aes(x = Country, y = Average_Income, fill = Countr
   theme_minimal() +
   theme(axis.text.x = element_blank())
 ```
+
 The average household income for Wave 7 in Italy, France, and Germany are graphically compared above.
 
 Based on the comparison, **France** has the highest average income (`r France_avg_income$Average_Income`), followed not so far by **Germany** (`r Germany_avg_income$Average_Income`) and way lower by **Italy** (`r Italy_avg_income$Average_Income`)
@@ -231,10 +227,9 @@ ggplot(data = Italy_income_filtered, aes(x = thinc_m)) +
   theme_minimal()
 ```
 
-
 ### Gini Coefficient
-To measure inequality let's start by using the **Gini** coefficient, an index to measure how much the distribution of income between individuals deviates from a perfectly equal distribution (Worldbank, Metadata Glossary).
-It is an index, so it provides a result between 0 and 1, a higher Gini coefficient indicates higher income inequality, while a coefficient loser to 0 indicates lower income inequality.
+
+To measure inequality let's start by using the **Gini** coefficient, an index to measure how much the distribution of income between individuals deviates from a perfectly equal distribution (Worldbank, Metadata Glossary). It is an index, so it provides a result between 0 and 1, a higher Gini coefficient indicates higher income inequality, while a coefficient loser to 0 indicates lower income inequality.
 
 ```{r}
 #| echo: false
@@ -244,13 +239,11 @@ italy_gini <- ineq(Italy_income_filtered$thinc_m, type = "Gini")
 print(paste("Gini coefficient for Italy:", italy_gini))
 ```
 
-We can see that for our country of references we find a gini coefficient equal to `r italy_gini` (0.334), which indicates some ineqaulity but not that much.
-The Gini coefficient is the most widely used measure of income inequality, because it is very easy to calculate and interpret. The problem is that it does not provide any insights into the distribution of income at different parts of the income distribution
+We can see that for our country of references we find a gini coefficient equal to `r italy_gini` (0.334), which indicates some ineqaulity but not that much. The Gini coefficient is the most widely used measure of income inequality, because it is very easy to calculate and interpret. The problem is that it does not provide any insights into the distribution of income at different parts of the income distribution
 
 ### Theil index
-We are now going to consider another coefficient to measure inequality: **The Theil Index**
-The Theil index measures the distance between what we observe in the data and a situation where everyone has the same income.
-The closer we get to 0 the more equality, the closer to 1, the higher the level of inequality.
+
+We are now going to consider another coefficient to measure inequality: **The Theil Index** The Theil index measures the distance between what we observe in the data and a situation where everyone has the same income. The closer we get to 0 the more equality, the closer to 1, the higher the level of inequality.
 
 ```{r}
 #| echo: false
@@ -263,6 +256,7 @@ print(paste("The Theil index for Italy:", italy_theil))
 We see a Theil index that again suggests not that high inequality of incomes in Italy. The problem with this index is that it is sensitive to the size of the population and the weights you put in each group, even though in this case we didn't assign any way.
 
 ### Palma ratio
+
 A last measure of income inequality is a share ratio, called "Palma ratio", it looks at where most of the inequality comes from, does it come from the fact that the top 10% have a way higher income, and/or from the fact that the bottom 40% have a very low income?
 
 ```{r}
@@ -283,8 +277,8 @@ This result for Italy, a Palma ratio of approximately 0.65, means that the incom
 The Palma ratio is very useful when looking into extreme income shares, to really understand where most of the inequality comes from. But it has to be used carefully, as it may oversimplify the income distribution by focusing on only two segments of the population (in our case, top 10% and bottom 40%).
 
 ## Measuring poverty in Italy
-Let's now focus on the bottom of the distribution by looking into different measures of poverty. Even though is not that easy to measure it, especially when having to decide what is the threshold in income to be considered in poverty for example. We can define it in monetary terms by looking at it in **absolute** terms (lack of minimum resources like food), **relative** (to living standards) and **subjective terms** ("do you think you have enough to meet ends?")
-We first need to find out poverty line, which in Italy changes accordingly to the fact that you live in the north, centre or south and of course it changes accordingly to the number of components in the family and their age. Since we do not know from where the individual come from, how many components in a household, the best thing to do is find a **relative poverty line** calculated as a percentage of the median income. It could be interesting in this case to create a relative poverty line at 60% of the median net income of the household of the sample in the data we are using.
+
+Let's now focus on the bottom of the distribution by looking into different measures of poverty. Even though is not that easy to measure it, especially when having to decide what is the threshold in income to be considered in poverty for example. We can define it in monetary terms by looking at it in **absolute** terms (lack of minimum resources like food), **relative** (to living standards) and **subjective terms** ("do you think you have enough to meet ends?") We first need to find out poverty line, which in Italy changes accordingly to the fact that you live in the north, centre or south and of course it changes accordingly to the number of components in the family and their age. Since we do not know from where the individual come from, how many components in a household, the best thing to do is find a **relative poverty line** calculated as a percentage of the median income. It could be interesting in this case to create a relative poverty line at 60% of the median net income of the household of the sample in the data we are using.
 
 ```{r}
 #| echo: false
@@ -296,4 +290,28 @@ relative_poverty_line <- median_income_Italy * 0.6
 print(paste("Relative Poverty Line:", round(relative_poverty_line, 2)))
 ```
 
+This poverty line is quite consistent with the poverty line stated by ISTAT in Italy, considered equal to the average monthly pro-capite expenditure in 2017 for a household composed by one component (Instat, 2018).
 
+### Headcount Ratio (poverty rate)
+
+With the poverty line previously determined, we can now look at the poverty rate, calculated as: 
+$$
+Total'under'the'poverty'line/\\total population
+$$
+
+This is what we get:
+
+```{r}
+num_poor <- sum(Italy_income_filtered$thinc_m < relative_poverty_line)
+
+total_population <- nrow(Italy_income_filtered)
+poverty_rate <- num_poor / total_population
+
+print(paste("Headcount Ratio (Poverty Rate):", round(poverty_rate * 100, 2), "%"))
+```
+
+This is a quite simple and easy to understand measure, but its limitations are obvious. First it does not say anything about the depth of poverty, you are either in poverty or no depending on where the poverty line has been fixed. As we previously said, where the individual are living in Italy changes the poverty line by quite a lot.
+
+### Poverty Gap Index
+
+Let's now have a look into where the poor stand in terms of distance from the poverty line, by using the poverty gap index. This index measures the depth of poverty by considering the distance separating the income of the poor from the poverty line
