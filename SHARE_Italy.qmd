@@ -24,6 +24,9 @@ library(stringr)
 library(knitr)
 library(patchwork)
 library(broom)
+library(stats)
+library(Gini)
+library(ineq)
 ```
 
 ### Link to the github repository of this project {.appendix}
@@ -164,6 +167,7 @@ combined <- data.frame(
 kable(combined, format = "markdown")
 ```
 
+
 ## Measures of inequality and poverty based on household income
 
 Let's now look into the average household income of Italy for wave 7 and compare it with two other countries: France and Germany.
@@ -202,5 +206,23 @@ ggplot(avg_income_comparison, aes(x = Country, y = Average_Income, fill = Countr
 The average household income for Wave 7 in Italy, France, and Germany are graphically compared above.
 
 Based on the comparison, **France** has the highest average income (`r France_avg_income$Average_Income`), followed not so far by **Germany** (`r Germany_avg_income$Average_Income`) and way lower by **Italy** (`r Italy_avg_income$Average_Income`)
+
+In the SHARE release guide for wave 7, some issues in terms of the imputations of wave 7 for household income have been pointed out. To compute the total household income for household that had mixed interviews, respondedents to the other interview of "SHARELIFE" were treated as "nonresponding partners" (NRPs) in the regular interview. The problem is that detailed questions on current income were asked only to those with regular interview, so like standard NRPs issues, "incomes of all household members who answered the SHARELIFE interview are unobservable and focusing attention on the observable incomes of the regular respondents may introduce a severe downward bias in the aggregated measure of total household income.
+
+In general, measuring household income is always difficult, because of misreporting or non response as cited before.
+
+These issues could introduce bias and inaccuracies in household income estimates, leading to potentially unreliable rankings.
+
+## Measuring income inequality in Italy
+
+To measure inequality let's start by using the Gini coefficient, an index to measure how much the distribution of income between individuals deviates from a perfectly equal distribution (Worldbank, Metadata Glossary).
+
+```{r}
+#| echo: false
+#| message: false
+# Calculate the Gini coefficient for Italy's income
+italy_gini <- ineq(Italy_income_filtered$thinc_m, type = "Gini")
+print(paste("Gini coefficient for Italy:", italy_gini))
+```
 
 
