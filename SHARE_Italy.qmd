@@ -472,41 +472,16 @@ ggplot(data = Italy, aes(x = Gender, y = HUI, fill = Gender)) +
   scale_fill_manual(values = c("#FF9999", "#66CCFF")) +
   theme_minimal()
 ```
-We don't see any meaningful difference in the distribution between female and male, considering the HUI that we created.
 
 ```{r}
-education_labels <- c("None", "Primary", "Lower Secondary", "Secondary", "Post-Secondary", "First Stage Tertiary", "Second Stage Tertiary", "Still in School", "Other")
+median_hui <- median(Italy$HUI, na.rm = TRUE)
+mean_hui <- mean(Italy$HUI, na.rm = TRUE)
 
-# Convert education levels to factor with corresponding labels
-Italy$isced1997_r <- factor(Italy$isced1997_r, levels = c(0:6, 95, 96), labels = education_labels)
-
-average_hui <- Italy %>%
-  group_by(isced1997_r) %>%
-  summarise(avg_HUI = mean(HUI, na.rm = TRUE))
-
-ggplot(data = average_hui, aes(x = isced1997_r, y = avg_HUI)) +
-  geom_bar(stat = "identity", fill = "grey") +
-  labs(x = "Education Level", y = "Average Health Utility Index (HUI)", title = "Average HUI by Education Level") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# Print the results
+print(paste("Median HUI:", round(median_hui, 2)))
+print(paste("Mean HUI:", round(mean_hui, 2)))
 ```
-```{r}
-Italy$iv009_mod <- replace(Italy$iv009_mod, Italy$iv009_mod < 0, NA)
-location_labels <- c("Big City", "Suburbs or Outskirts of a Big City", "Large Town", "Small Town", "Rural Area or Village")
 
-# Convert area of location to factor with corresponding labels
-Italy$iv009_mod <- factor(Italy$iv009_mod, levels = 1:5, labels = location_labels)
 
-# Calculate average HUI for each area of location
-average_hui_location <- Italy %>%
-  group_by(iv009_mod) %>%
-  summarise(avg_HUI = mean(HUI, na.rm = TRUE))
-
-# Create a bar graph showing average HUI for each area of location
-ggplot(data = average_hui_location, aes(x = iv009_mod, y = avg_HUI)) +
-  geom_bar(stat = "identity", fill = "#FF9999") +
-  labs(x = "Area of Location", y = "Average Health Utility Index (HUI)", title = "Average HUI by Area of Location") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
-```
+Since the HUI is difficult to measure correctly, it is better to have a look into inequality in subgroups by only considering the perceived health status as it is, in subjective terms, then look at it in more objective terms using the chronic diseases.
 
