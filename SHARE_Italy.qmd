@@ -39,7 +39,9 @@ This paper uses data from the generated easySHARE data set (DOI: [10.6103/SHARE.
 
 #### References {.appendix}
 
-Börsch-Supan, A. & S. Gruber (2020): easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset. doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800) Istat 2018, Condizione di vita, reddito e carico fiscale delle famiglie
+Börsch-Supan, A. & S. Gruber (2020): *easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset.* doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800) 
+Istat 2018, *Condizione di vita, reddito e carico fiscale delle famiglie*
+Asada, Y., Hurley, J., Norheim, O.F. et al. *A three-stage approach to measuring health inequalities and inequities*. Int J Equity Health 13, 98 (2014). https://doi.org/10.1186/s12939-014-0098-y
 
 ```{r}
 #| echo: false
@@ -368,11 +370,13 @@ print(paste("Subjective Poverty Rate:", round(poverty_rate_subjective * 100, 2),
 
 This result is much more consistent with the previous relative poverty measures that we have found so far.
 
-## Measuring health inequality
+## Measuring inequality based on health outcomes
 
 Here we are going to measure health inequality, but let's first have a look at the self perceived health, where respondents had to answer about their health status with: 1) Excellent, 2) Very good, 3) Good, 4) Fair, 5) Poor
 
 ```{r}
+#| echo: false
+#| message: false
 Italy_satisfaction_filtered <- Italy |>
   filter(sphus>0)
 health_satisfaction_freq <- table(Italy_satisfaction_filtered$sphus)
@@ -394,13 +398,13 @@ print(health_satisfaction_table)
 ```
 We can see that most of the respondents answer between fair and good when asked about their self reported health, while most of them restrain from answering "excellent" to that question.
 
-Let's now look into more specific variables, to see if the self perceived health.
-
-The first varibale we are going to take into consideration is one where respondents had to answer "Has a doctor ever told you that you had …", considering the following chronic diseases: 1. A heart attack; 2. High blood pressure or hypertension; 3. High blood cholesterol; 4. A stroke or cerebral vascular disease; 5. Diabetes or high blood sugar; 6. Chronic lung disease (...); 10. Cancer or malignant tumor (…); 11. Stomach or duodenal ulcer, peptic ulcer; 12. Parkinson disease; 13. Cataracts; 14. Hip fracture or femoral fracture.
-Individuals that did not have any of those have 0 as result, so we can look into the percentage of respondends that has had a chronic disease and that has not:
+Before getting into the measure of health inequality, let's look into a variable that is less subjective than the previous one. chronic_mod is a variable that looks into the number of chronic disease of individuals. Respondents had to answer to the question: "Has a doctor ever told you that you had …", considering the following chronic diseases: 1. A heart attack; 2. High blood pressure or hypertension; 3. High blood cholesterol; 4. A stroke or cerebral vascular disease; 5. Diabetes or high blood sugar; 6. Chronic lung disease (...); 10. Cancer or malignant tumor (…); 11. Stomach or duodenal ulcer, peptic ulcer; 12. Parkinson disease; 13. Cataracts; 14. Hip fracture or femoral fracture.
+Individuals that did not have any of those have 0 as result, so we can look into the percentage of respondents that has had a chronic disease and that has not:
 
 
 ```{r}
+#| echo: false
+#| message: false
 with_chronic <- sum(Italy$chronic_mod > 0)
 total_responses <- nrow(Italy)
 percentage_with_chronic <- with_chronic / total_responses * 100
@@ -422,5 +426,87 @@ ggplot(chronic_status, aes(x = Status, y = Percentage, fill = Status)) +
   theme_minimal() +
   theme(legend.position = "none") +
   scale_fill_manual(values = c("With Chronic Disease" = "red", "Without Chronic Disease" = "lightgreen"))
+```
+
+The data shows that more than 60% of respondents for Italy have had at least one of the chronic disease mentioned, it looks quite consistent with the low level of self reported health we saw before.
+
+With this general view of our country of reference, we are now going measure health inequality at the individual level.
+
+### Measures of health inequality
+We first have to select some health indicators, from the data available we can consider:
+-   *Self-perceived health status*
+-   *Presence of chronic diseases*
+-   *Limitations in activities of daily living (ADL)*, which indicates difficulties in performing basic self-care tasks, from 0 to 5, the higher the index the higher the difficulty of the respondent to complete these tasks.
+-   *Limitations in instrumental activities of daily living (IADL)*, which indicates the difficulty of performing more difficult activities necessary for independent living, ranges from 0 to 5, the higher the more difficulties in doing these tasks.
+-   *Depression scale*, which measures the current depression, based on several measures: depressed mood, pessimism, suicidality, guilt, sleep, interest, irritability, appetite, fatigue, concentration, enjoyment and tearfulness. It ranges from 0 (not depressed), to 12 (very depressed)
+
+Then we will have to find some subgroups, in our case what would be interesting to see is in terms of education, sex and place of residence (City, village, ...)
+
+From here what we want to do is create a Health Utility Index, as done by Asada et al. in 2014. To create this we have to normalise hour health indicators into a common scale (range from 0 to 1), as the Health Utility Index assigns being dead a value of zero and full health a value of one (Asada et al, 2014).
+
+```{r}
+#| echo: false
+#| message: false
+self_reported_scaled <- ifelse(Italy$sphus >= 0, (Italy$sphus - 1) / 4, NA)
+chronic_disease_scaled <- ifelse(Italy$chronic_mod >= 0, ifelse(Italy$chronic_mod > 0, 1, 0), NA)
+ADL_scaled <- ifelse(Italy$adla >= 0, Italy$adla / 5, NA)
+IADL_scaled <- ifelse(Italy$iadlza >= 0, Italy$iadlza / 5, NA)
+depression_scaled <- ifelse(Italy$eurod >= 0, Italy$eurod / 12, NA)
+
+Health_Utility_Index <- rowMeans(cbind(self_reported_scaled, chronic_disease_scaled, ADL_scaled, IADL_scaled, depression_scaled), na.rm = TRUE)
+
+HUI <- Health_Utility_Index
+
+Italy$HUI <- HUI
+```
+
+Having the HUI for each respondent we can now look into different subgroups in our data, to grasp health inequalities between them.
+
+Let's start with gender:
+```{r warning=FALSE}
+#| echo: false
+#| message: false
+ggplot(data = Italy, aes(x = Gender, y = HUI, fill = Gender)) +
+  geom_boxplot() +
+  labs(x = "Gender", y = "Health Utility Index (HUI)", title = "Distribution of HUI by Gender") +
+  scale_fill_manual(values = c("#FF9999", "#66CCFF")) +
+  theme_minimal()
+```
+We don't see any meaningful difference in the distribution between female and male, considering the HUI that we created.
+
+```{r}
+education_labels <- c("None", "Primary", "Lower Secondary", "Secondary", "Post-Secondary", "First Stage Tertiary", "Second Stage Tertiary", "Still in School", "Other")
+
+# Convert education levels to factor with corresponding labels
+Italy$isced1997_r <- factor(Italy$isced1997_r, levels = c(0:6, 95, 96), labels = education_labels)
+
+average_hui <- Italy %>%
+  group_by(isced1997_r) %>%
+  summarise(avg_HUI = mean(HUI, na.rm = TRUE))
+
+ggplot(data = average_hui, aes(x = isced1997_r, y = avg_HUI)) +
+  geom_bar(stat = "identity", fill = "grey") +
+  labs(x = "Education Level", y = "Average Health Utility Index (HUI)", title = "Average HUI by Education Level") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+Italy$iv009_mod <- replace(Italy$iv009_mod, Italy$iv009_mod < 0, NA)
+location_labels <- c("Big City", "Suburbs or Outskirts of a Big City", "Large Town", "Small Town", "Rural Area or Village")
+
+# Convert area of location to factor with corresponding labels
+Italy$iv009_mod <- factor(Italy$iv009_mod, levels = 1:5, labels = location_labels)
+
+# Calculate average HUI for each area of location
+average_hui_location <- Italy %>%
+  group_by(iv009_mod) %>%
+  summarise(avg_HUI = mean(HUI, na.rm = TRUE))
+
+# Create a bar graph showing average HUI for each area of location
+ggplot(data = average_hui_location, aes(x = iv009_mod, y = avg_HUI)) +
+  geom_bar(stat = "identity", fill = "#FF9999") +
+  labs(x = "Area of Location", y = "Average Health Utility Index (HUI)", title = "Average HUI by Area of Location") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 ```
 
