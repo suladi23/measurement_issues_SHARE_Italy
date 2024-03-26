@@ -180,7 +180,7 @@ Italy_avg_income <- Italy %>%
 
 # Calculate average household income for two other countries (France and Netherlands)
 France_avg_income <- France %>%
-  filter(thinc_m != -10) %>%
+  filter(thinc_m != 0) %>%
   summarise(Average_Income = mean(thinc_m))
 
 Germany_avg_income <- Germany %>%
@@ -367,4 +367,60 @@ print(paste("Subjective Poverty Rate:", round(poverty_rate_subjective * 100, 2),
 ```
 
 This result is much more consistent with the previous relative poverty measures that we have found so far.
+
+## Measuring health inequality
+
+Here we are going to measure health inequality, but let's first have a look at the self perceived health, where respondents had to answer about their health status with: 1) Excellent, 2) Very good, 3) Good, 4) Fair, 5) Poor
+
+```{r}
+Italy_satisfaction_filtered <- Italy |>
+  filter(sphus>0)
+health_satisfaction_freq <- table(Italy_satisfaction_filtered$sphus)
+
+# Compute percentages
+health_satisfaction_percent <- prop.table(health_satisfaction_freq) * 100
+
+health_satisfaction_table <- data.frame(
+  Satisfaction_Level = as.character(names(health_satisfaction_freq)),
+  Frequency = as.numeric(health_satisfaction_freq),
+  Percentage = as.numeric(health_satisfaction_percent)
+)
+
+# Sort the table by Satisfaction_Level
+health_satisfaction_table <- health_satisfaction_table[order(health_satisfaction_table$Satisfaction_Level), ]
+
+# Print the table
+print(health_satisfaction_table)
+```
+We can see that most of the respondents answer between fair and good when asked about their self reported health, while most of them restrain from answering "excellent" to that question.
+
+Let's now look into more specific variables, to see if the self perceived health.
+
+The first varibale we are going to take into consideration is one where respondents had to answer "Has a doctor ever told you that you had …", considering the following chronic diseases: 1. A heart attack; 2. High blood pressure or hypertension; 3. High blood cholesterol; 4. A stroke or cerebral vascular disease; 5. Diabetes or high blood sugar; 6. Chronic lung disease (...); 10. Cancer or malignant tumor (…); 11. Stomach or duodenal ulcer, peptic ulcer; 12. Parkinson disease; 13. Cataracts; 14. Hip fracture or femoral fracture.
+Individuals that did not have any of those have 0 as result, so we can look into the percentage of respondends that has had a chronic disease and that has not:
+
+
+```{r}
+with_chronic <- sum(Italy$chronic_mod > 0)
+total_responses <- nrow(Italy)
+percentage_with_chronic <- with_chronic / total_responses * 100
+
+# Calculate the percentage of respondents with no chronic disease
+without_chronic <- sum(Italy$chronic_mod == 0)
+percentage_without_chronic <- without_chronic / total_responses * 100
+
+# Create a data frame for plotting
+chronic_status <- data.frame(
+  Status = c("With Chronic Disease", "Without Chronic Disease"),
+  Percentage = c(percentage_with_chronic, percentage_without_chronic)
+)
+
+# Plot the results
+ggplot(chronic_status, aes(x = Status, y = Percentage, fill = Status)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Percentage of Respondents with Chronic Diseases") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("With Chronic Disease" = "red", "Without Chronic Disease" = "lightgreen"))
+```
 
