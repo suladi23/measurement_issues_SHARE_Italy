@@ -433,7 +433,44 @@ We first have to select some health indicators, from the data available we can c
 - *Limitations in instrumental activities of daily living (IADL)*, which indicates the difficulty of performing more difficult activities necessary for independent living, ranges from 0 to 5, the higher the more difficulties in doing these tasks.
 - *Depression scale*, which measures the current depression, based on several measures: depressed mood, pessimism, suicidality, guilt, sleep, interest, irritability, appetite, fatigue, concentration, enjoyment and tearfulness. It ranges from 0 (not depressed), to 12 (very depressed)
 
-Then we will have to find some subgroups, in our case what would be interesting to see is in terms of education, sex and place of residence (City, village, ...)
+We find some subgroups, in our case what would be interesting to see is in terms of education, sex and place of residence (City, village, ...)
+
+The health inequality measures that we will use are reported by the review of existing measures by the World Helth Organization (Schlotheuber and Ahmad Reza Hosseinpoor, 2022).
+
+### Health disparity index
+We will use two different indexes, first the health disparity index, a relative measure of inequality that shows the average difference between each population subgroup and the setting average, in relative terms.
+
+```{r}
+Italy$adla[Italy$adla<0] <- NA
+Italy$iadlza[Italy$iadlza<0] <- NA
+Italy$sphus[Italy$sphus<0] <- NA
+Italy$eurod[Italy$eurod<0] <- NA
+Italy$chronic_mod[Italy$chronic_mod<0] <- NA
+
+male_mean_adla <- mean(Italy$adla[Italy$Gender == "Male"], na.rm = TRUE)
+female_mean_adla <- mean(Italy$adla[Italy$Gender == "Female"], na.rm = TRUE)
+health_disparity_gender_adla <- male_mean_adla / female_mean_adla
+
+#For sphus
+male_mean_sphus <- mean(Italy$sphus[Italy$Gender == "Male"], na.rm = TRUE)
+female_mean_sphus <- mean(Italy$sphus[Italy$Gender == "Female"], na.rm = TRUE)
+health_disparity_gender_sphus <- male_mean_sphus / female_mean_sphus
+
+#For chronic
+Italy$chronic_disease_dummy <- ifelse(Italy$chronic_mod >= 0, ifelse(Italy$chronic_mod > 0, 1, 0), NA)
+male_mean_chronic <- mean(Italy$chronic_disease_dummy[Italy$Gender == "Male"], na.rm = TRUE)
+female_mean_chronic <- mean(Italy$chronic_disease_dummy[Italy$Gender == "Female"], na.rm = TRUE)
+health_disparity_gender_chronic <- female_mean_chronic / male_mean_chronic
+
+# Print the health disparity index
+print(paste("Health disparity per gender in self reported health:", round(health_disparity_gender_sphus * 100, 2), "%"))
+
+print(paste("Health disparity per gender in ADL:", round(health_disparity_gender_adla * 100, 2), "%"))
+
+print(paste("Health disparity per gender in chronic disease:", round(health_disparity_gender_chronic * 100, 2), "%"))
+```
+
+What we see
 
 From here what we want to do is create a Health Utility Index, as done by Asada et al. in 2014. To create this we have to normalise hour health indicators into a common scale (range from 0 to 1), as the Health Utility Index assigns being dead a value of zero and full health a value of one (Asada et al, 2014).
 
