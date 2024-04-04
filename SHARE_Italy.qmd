@@ -441,6 +441,8 @@ The health inequality measures that we will use are reported by the review of ex
 We will use two different indexes, first the health disparity index, a relative measure of inequality that shows the average difference between each population subgroup and the setting average, in relative terms.
 
 ```{r}
+#| echo: false
+#| message: false
 Italy$adla[Italy$adla<0] <- NA
 Italy$iadlza[Italy$iadlza<0] <- NA
 Italy$sphus[Italy$sphus<0] <- NA
@@ -460,57 +462,86 @@ health_disparity_gender_sphus <- male_mean_sphus / female_mean_sphus
 Italy$chronic_disease_dummy <- ifelse(Italy$chronic_mod >= 0, ifelse(Italy$chronic_mod > 0, 1, 0), NA)
 male_mean_chronic <- mean(Italy$chronic_disease_dummy[Italy$Gender == "Male"], na.rm = TRUE)
 female_mean_chronic <- mean(Italy$chronic_disease_dummy[Italy$Gender == "Female"], na.rm = TRUE)
-health_disparity_gender_chronic <- female_mean_chronic / male_mean_chronic
+health_disparity_gender_chronic <- male_mean_chronic / female_mean_chronic
 
 # Print the health disparity index
-print(paste("Health disparity per gender in self reported health:", round(health_disparity_gender_sphus * 100, 2), "%"))
+health_disparity_gender_table <- data.frame(
+  Gender = c("Male/Female"),
+  Self_Reported_Health = round(health_disparity_gender_sphus, 2),
+  ADL = round(health_disparity_gender_adla, 2),
+  Chronic_Disease = round(health_disparity_gender_chronic, 2)
+)
 
-print(paste("Health disparity per gender in ADL:", round(health_disparity_gender_adla * 100, 2), "%"))
-
-print(paste("Health disparity per gender in chronic disease:", round(health_disparity_gender_chronic * 100, 2), "%"))
+# Print the table using kable
+kable(health_disparity_gender_table, format = "markdown")
 ```
 
-What we see
+The health disparity per gender shows that there is almost no inequality in the self reported health between men and women, while we see that man are more likely to have at least one chronic disease.
 
-From here what we want to do is create a Health Utility Index, as done by Asada et al. in 2014. To create this we have to normalise hour health indicators into a common scale (range from 0 to 1), as the Health Utility Index assigns being dead a value of zero and full health a value of one (Asada et al, 2014).
+We do the same for the place of residence and here are the results:
 
 ```{r}
 #| echo: false
 #| message: false
-self_reported_scaled <- ifelse(Italy$sphus >= 0, (Italy$sphus - 1) / 4, NA)
-chronic_disease_scaled <- ifelse(Italy$chronic_mod >= 0, ifelse(Italy$chronic_mod > 0, 1, 0), NA)
-ADL_scaled <- ifelse(Italy$adla >= 0, Italy$adla / 5, NA)
-IADL_scaled <- ifelse(Italy$iadlza >= 0, Italy$iadlza / 5, NA)
-depression_scaled <- ifelse(Italy$eurod >= 0, Italy$eurod / 12, NA)
-
-Health_Utility_Index <- rowMeans(cbind(self_reported_scaled, chronic_disease_scaled, ADL_scaled, IADL_scaled, depression_scaled), na.rm = TRUE)
-
-HUI <- Health_Utility_Index
-
-Italy$HUI <- HUI
-```
-
-Having the HUI for each respondent we can now look into different subgroups in our data, to grasp health inequalities between them.
-
-Let's start with gender:
-
-```{r warning=FALSE}
-#| echo: false
-#| message: false
-ggplot(data = Italy, aes(x = Gender, y = HUI, fill = Gender)) +
-  geom_boxplot() +
-  labs(x = "Gender", y = "Health Utility Index (HUI)", title = "Distribution of HUI by Gender") +
-  scale_fill_manual(values = c("#FF9999", "#66CCFF")) +
-  theme_minimal()
+Italy$iv009_mod[Italy$iv009_mod <1] <- "NA"
+Italy$iv009_mod[Italy$iv009_mod == 1] <- "City"
+Italy$iv009_mod[Italy$iv009_mod == 2] <- "Suburbs"
+Italy$iv009_mod[Italy$iv009_mod == 3] <- "Large town"
+Italy$iv009_mod[Italy$iv009_mod == 4] <- "Small town"
+Italy$iv009_mod[Italy$iv009_mod == 5] <- "Rural area"
 ```
 
 ```{r}
-median_hui <- median(Italy$HUI, na.rm = TRUE)
-mean_hui <- mean(Italy$HUI, na.rm = TRUE)
+#| echo: false
+#| message: false
+city_mean_adla <- mean(Italy$adla[Italy$iv009_mod == "City"], na.rm = TRUE)
+suburbs_mean_adla <- mean(Italy$adla[Italy$iv009_mod == "Suburbs"], na.rm = TRUE)
+large_town_mean_adla <- mean(Italy$adla[Italy$iv009_mod == "Large town"], na.rm = TRUE)
+small_town_mean_adla <- mean(Italy$adla[Italy$iv009_mod == "Small town"], na.rm = TRUE)
+rural_area_mean_adla <- mean(Italy$adla[Italy$iv009_mod == "Rural area"], na.rm = TRUE)
 
-# Print the results
-print(paste("Median HUI:", round(median_hui, 2)))
-print(paste("Mean HUI:", round(mean_hui, 2)))
+health_disparity_area_adla <- c(
+  city_mean_adla / suburbs_mean_adla,
+  city_mean_adla / large_town_mean_adla,
+  city_mean_adla / small_town_mean_adla,
+  city_mean_adla / rural_area_mean_adla
+)
+
+#For sphus
+city_mean_sphus <- mean(Italy$sphus[Italy$iv009_mod == "City"], na.rm = TRUE)
+suburbs_mean_sphus <- mean(Italy$sphus[Italy$iv009_mod == "Suburbs"], na.rm = TRUE)
+large_town_mean_sphus <- mean(Italy$sphus[Italy$iv009_mod == "Large town"], na.rm = TRUE)
+small_town_mean_sphus <- mean(Italy$sphus[Italy$iv009_mod == "Small town"], na.rm = TRUE)
+rural_area_mean_sphus <- mean(Italy$sphus[Italy$iv009_mod == "Rural area"], na.rm = TRUE)
+
+health_disparity_area_sphus <- c(
+  city_mean_sphus / suburbs_mean_sphus,
+  city_mean_sphus / large_town_mean_sphus,
+  city_mean_sphus / small_town_mean_sphus,
+  city_mean_sphus / rural_area_mean_sphus
+)
+
+#For chronic
+city_mean_chronic <- mean(Italy$chronic_mod[Italy$iv009_mod == "City"], na.rm = TRUE)
+suburbs_mean_chronic <- mean(Italy$chronic_mod[Italy$iv009_mod == "Suburbs"], na.rm = TRUE)
+large_town_mean_chronic <- mean(Italy$chronic_mod[Italy$iv009_mod == "Large town"], na.rm = TRUE)
+small_town_mean_chronic <- mean(Italy$chronic_mod[Italy$iv009_mod == "Small town"], na.rm = TRUE)
+rural_area_mean_chronic <- mean(Italy$chronic_mod[Italy$iv009_mod == "Rural area"], na.rm = TRUE)
+
+health_disparity_area_chronic <- c(
+  city_mean_chronic / suburbs_mean_chronic,
+  city_mean_chronic / large_town_mean_chronic,
+  city_mean_chronic / small_town_mean_chronic,
+  city_mean_chronic / rural_area_mean_chronic
+)
+# Print the health disparity index
+health_disparity_table <- data.frame(
+  Area = c("City/Suburbs", "City/Large Town", "City/Small Town", "City/Rural Area"),
+  Self_Reported_Health = round(health_disparity_area_sphus, 2),
+  ADL = round(health_disparity_area_adla, 2),
+  Chronic_Disease = round(health_disparity_area_chronic, 2))
+kable(health_disparity_table, format = "markdown")
 ```
 
-Since the HUI is difficult to measure correctly, it is better to have a look into inequality in subgroups by only considering the perceived health status as it is, in subjective terms, then look at it in more objective terms using the chronic diseases.
+The first thing we notice is that again we don't find much of inequality in self reported health between respondents resident in different areas. It seems to be high inequality in terms of difficulties of carrying activities of daily living between people living in the city and those living outside. For what it concerns chronic disease, it seems that individuals living in rural areas suffer more from these diseases, even though the difference is not as high as for ADL.
+
