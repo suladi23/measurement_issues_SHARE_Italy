@@ -1,9 +1,9 @@
 ---
-title: "SHARE_Italy"
+title: "SHARE data analysis - Italy"
 format:
   pdf:
     toc: true
-    toc-depth: 2
+    toc-depth: 3
     toc-title: Contents
     number-sections: true
     colorlinks: true
@@ -27,19 +27,10 @@ library(broom)
 library(stats)
 library(Gini)
 library(ineq)
+library(MASS)
 ```
 
-### Link to the github repository of this project {.appendix}
-
-[Github repository](https://github.com/suladi23/measurement_issues_SHARE_Italy)
-
-### Source of the data {.appendix}
-
-This paper uses data from the generated easySHARE data set (DOI: [10.6103/SHARE.easy.800](https://share-eric.eu/data/data-set-details/easyshare)), see Gruber et al. (2014) for methodological details. The easySHARE release 8.0.0 is based on SHARE Waves 1, 2, 3 (SHARELIFE), 4, 5, 6, 7 and 8 (DOIs: [10.6103/SHARE.w1.800](http://dx.doi.org/10.6103/SHARE.w1.800), [10.6103/SHARE.w2.800](http://dx.doi.org/10.6103/SHARE.w2.800), [10.6103/SHARE.w3.800](http://dx.doi.org/10.6103/SHARE.w3.800), [10.6103/SHARE.w4.800](http://dx.doi.org/10.6103/SHARE.w4.800),[10.6103/SHARE.w5.800](http://dx.doi.org/10.6103/SHARE.w5.800), [10.6103/SHARE.w6.800](http://dx.doi.org/10.6103/SHARE.w6.800), [10.6103/SHARE.w7.800](http://dx.doi.org/10.6103/SHARE.w7.800), [10.6103/SHARE.w8.800](http://dx.doi.org/10.6103/SHARE.w8.800))
-
-### References {.appendix}
-
-Börsch-Supan, A. & S. Gruber (2020): *easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset.* doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800) Istat 2018, *Condizione di vita, reddito e carico fiscale delle famiglie* Asada, Y., Hurley, J., Norheim, O.F. et al. *A three-stage approach to measuring health inequalities and inequities*. Int J Equity Health 13, 98 (2014). https://doi.org/10.1186/s12939-014-0098-y
+\newpage
 
 ```{r}
 #| echo: false
@@ -236,7 +227,7 @@ To measure inequality let's start by using the **Gini** coefficient, an index to
 #| message: false
 # Calculate the Gini coefficient for Italy's income
 italy_gini <- ineq(Italy_income_filtered$thinc_m, type = "Gini")
-print(paste("Gini coefficient for Italy:", italy_gini))
+print(paste("Gini coefficient for Italy:", round(italy_gini, 2)))
 ```
 
 We can see that for our country of references we find a gini coefficient equal to `r italy_gini` (0.334), which indicates some ineqaulity but not that much. The Gini coefficient is the most widely used measure of income inequality, because it is very easy to calculate and interpret. The problem is that it does not provide any insights into the distribution of income at different parts of the income distribution
@@ -250,7 +241,7 @@ We are now going to consider another coefficient to measure inequality: **The Th
 #| message: false
 # Calculate the Theil index
 italy_theil <- Theil(Italy_income_filtered$thinc_m)
-print(paste("The Theil index for Italy:", italy_theil))
+print(paste("The Theil index for Italy:", round(italy_theil, 2)))
 ```
 
 We see a Theil index that again suggests not that high inequality of incomes in Italy. The problem with this index is that it is sensitive to the size of the population and the weights you put in each group, even though in this case we didn't assign any way.
@@ -264,15 +255,15 @@ A last measure of income inequality is a share ratio, called "Palma ratio", it l
 #| message: false
 # Calculate the Palma ratio
 percentile_90 <- quantile(Italy_income_filtered$thinc_m, 0.9)
-percentile_60 <- quantile(Italy_income_filtered$thinc_m, 0.6)
+percentile_40 <- quantile(Italy_income_filtered$thinc_m, 0.4)
 top_10_share <- sum(Italy_income_filtered$thinc_m[Italy_income_filtered$thinc_m >= percentile_90]) / sum(Italy_income_filtered$thinc_m)
-bottom_40_share <- sum(Italy_income_filtered$thinc_m[Italy_income_filtered$thinc_m <= percentile_60]) / sum(Italy_income_filtered$thinc_m)
+bottom_40_share <- sum(Italy_income_filtered$thinc_m[Italy_income_filtered$thinc_m <= percentile_40]) / sum(Italy_income_filtered$thinc_m)
 italy_palma <- top_10_share / bottom_40_share
 
-print(paste("The Palma ratio 90/40 for Italy:", italy_palma))
+print(paste("The Palma ratio 90/40 for Italy:", round(italy_palma, 2)))
 ```
 
-This result for Italy, a Palma ratio of approximately 0.65, means that the income share of the top 10% of the population is about 0.65 times larger than the income share of the bottom 40%. It suggests that a signifiant portion of the total income is concentrated among the wealthiest individuals, something that is not surprising in developed countries like Italy.
+This result for Italy, a Palma ratio of approximately 1.26, means that the income share of the top 10% of the population is about 1.26 times larger than the income share of the bottom 40%. It suggests that a signifiant portion of the total income is concentrated among the wealthiest individuals, something that is not surprising in developed countries like Italy.
 
 The Palma ratio is very useful when looking into extreme income shares, to really understand where most of the inequality comes from. But it has to be used carefully, as it may oversimplify the income distribution by focusing on only two segments of the population (in our case, top 10% and bottom 40%).
 
@@ -294,7 +285,8 @@ This poverty line is quite consistent with the poverty line stated by ISTAT in I
 
 ## Headcount Ratio (poverty rate)
 
-With the poverty line previously determined, we can now look at the poverty rate, calculated as: $$
+With the poverty line previously determined, we can now look at the poverty rate, calculated as: 
+$$
 Total'under'the'poverty'line/\\total population
 $$
 
@@ -317,7 +309,8 @@ This is a quite simple and easy to understand measure, but its limitations are o
 
 Let's now have a look into where the poor stand in terms of distance from the poverty line, by using the poverty gap index. This index measures the depth of poverty by considering the distance separating the income of the poor from the poverty line.
 
-It is calculated as: $$
+It is calculated as: 
+$$
 PGI = {1/N}∑(poverty line - income of poor)/\\poverty line
 $$
 
@@ -545,3 +538,104 @@ kable(health_disparity_table, format = "markdown")
 
 The first thing we notice is that again we don't find much of inequality in self reported health between respondents resident in different areas. It seems to be high inequality in terms of difficulties of carrying activities of daily living between people living in the city and those living outside. For what it concerns chronic disease, it seems that individuals living in rural areas suffer more from these diseases, even though the difference is not as high as for ADL.
 
+## Econometric analysis
+
+Health inequalities across individuals can be influenced by various socioeconomic, demographic, and environmental factors. To conduct an econometric analysis, we can employ a regression model to explore the relationship between these factors and health outcomes.
+
+We will be looking at the self reported health and how this variable is affect by several specifications, **demographic** (such as age and gender), **socioeconomic** (income, education, occupation), and health related (diet, phisical activity, smoking).
+
+The regression model used will be an ordered probit model, given the characteristics of the dependent variable, which takes 5 outcomes that can be ordered from low to high self reported health.
+
+The econometric model writes as follow:
+
+![Econometric Model Equation](Econometric.png)
+
+Where:
+
+- \( Health_i \) is the health outcome for individual ordered from 1 (exellent) to 5 (poor).
+
+- \( Income_i \) is the income level for individual that we will separate in 5 subgroups.
+
+- \( Education_i \) is the education level for individual (in years of study).
+
+- \( Age_i \) is the age of individual.
+
+- \( bmi_i \) is the bmi of individual.
+
+- \( Smoking_i \) whether the individual smokes or not.
+
+- \( Gender_i \) is the gender of individual.
+
+- \( beta_0, beta_1, beta_2, beta_3, beta_4 \) are the coefficients to be estimated.
+
+- \( \epsilon_i \) is the error term.
+
+
+```{r}
+#| echo: false
+#| message: false
+New_Italy <- wave7 |>
+  filter(country == "16")
+New_Italy$thinc_m[New_Italy$thinc_m < 0] <- "NA"
+New_Italy$female[New_Italy$female < 0] <- "NA"
+New_Italy$eduyears_mod[New_Italy$eduyears_mod < 0] <- "NA"
+New_Italy$bmi[New_Italy$bmi < 0] <- "NA"
+New_Italy$smoking[New_Italy$smoking < 0] <- "NA"
+New_Italy$sphus[New_Italy$sphus < 0] <- "NA"
+```
+
+This model allows us to estimate the relationship between socioeconomic and demographic factors and health outcomes. With a probit model we can not look into the size of the effects but we can say if an indipendent variable increases or decreases the likelihood for the individual to report high or low level of self reported health.
+To do so we have to create brackets for the variable income, we will use the progressive tax rate "IRPEF" of italy, we will have so 5 brackets, from low income to very high.
+
+```{r warning=FALSE}
+#| echo: false
+#| message: false
+#| warning: false
+New_Italy$thinc_m <- as.numeric(New_Italy$thinc_m, na.rm = TRUE)
+is.numeric(New_Italy$thinc_m)
+thresholds <- c(0, 15000, 28000, 55000, 75000, Inf)
+New_Italy$income_bracket <- cut(New_Italy$thinc_m, breaks = thresholds, labels = FALSE)
+```
+
+
+```{r warning=FALSE}
+#| echo: false
+#| message: false
+#| warning: false
+New_Italy_omitted <- na.omit(New_Italy)
+New_Italy_omitted$sphus <- as.factor(New_Italy_omitted$sphus)
+New_Italy_omitted$income_bracket <- as.numeric(New_Italy_omitted$income_bracket)
+New_Italy_omitted$eduyears_mod <- as.numeric(New_Italy_omitted$eduyears_mod)
+New_Italy_omitted$age <- as.numeric(New_Italy_omitted$age)
+New_Italy_omitted$bmi <- as.numeric(New_Italy_omitted$bmi)
+New_Italy_omitted$smoking <- as.numeric(New_Italy_omitted$smoking)
+New_Italy_omitted$female <- as.numeric(New_Italy_omitted$female)
+
+probit_model <- polr(sphus ~ income_bracket + eduyears_mod + age + bmi + smoking + female, data = New_Italy_omitted, method = 'probit')
+
+summary(probit_model)
+```
+
+Keeping in mind that for self perceived health respondents answered with a number between 1 to 5, with 1 being "Exellent" and 5 being "Poor".
+It seems that income and education negatively impact the probability of perceiving lower levels of health, while bmi and age increases the likelihood of perceiving a lower level of health. Nothing clear can be said about gender and whether the respondent is a smoker or not.
+
+The data unfortunately is made of a lot of missing values, we have to omit them to be able to use our model. Ignoring missing values can lead to biased estimates, distorting results and conclusions. Additionally it reduced the sample size, potentially removing important information and providing less strong results.
+
+\newpage
+
+# Annex
+## Link to the github repository of this project {.appendix}
+
+[Github repository](https://github.com/suladi23/measurement_issues_SHARE_Italy)
+
+## Source of the data {.appendix}
+
+This paper uses data from the generated easySHARE data set (DOI: [10.6103/SHARE.easy.800](https://share-eric.eu/data/data-set-details/easyshare)), see Gruber et al. (2014) for methodological details. The easySHARE release 8.0.0 is based on SHARE Waves 1, 2, 3 (SHARELIFE), 4, 5, 6, 7 and 8 (DOIs: [10.6103/SHARE.w1.800](http://dx.doi.org/10.6103/SHARE.w1.800), [10.6103/SHARE.w2.800](http://dx.doi.org/10.6103/SHARE.w2.800), [10.6103/SHARE.w3.800](http://dx.doi.org/10.6103/SHARE.w3.800), [10.6103/SHARE.w4.800](http://dx.doi.org/10.6103/SHARE.w4.800),[10.6103/SHARE.w5.800](http://dx.doi.org/10.6103/SHARE.w5.800), [10.6103/SHARE.w6.800](http://dx.doi.org/10.6103/SHARE.w6.800), [10.6103/SHARE.w7.800](http://dx.doi.org/10.6103/SHARE.w7.800), [10.6103/SHARE.w8.800](http://dx.doi.org/10.6103/SHARE.w8.800))
+
+## References {.appendix}
+
+- Börsch-Supan, A. & S. Gruber (2020): *easySHARE. Release version: 8.0.0. SHARE-ERIC. Dataset.* doi: [10.6103/SHARE.easy.800](http://dx.doi.org/10.6103/SHARE.easy.800) 
+
+- Istat 2018, *Condizione di vita, reddito e carico fiscale delle famiglie*
+
+- Asada, Y., Hurley, J., Norheim, O.F. et al. *A three-stage approach to measuring health inequalities and inequities*. Int J Equity Health 13, 98 (2014). https://doi.org/10.1186/s12939-014-0098-y
